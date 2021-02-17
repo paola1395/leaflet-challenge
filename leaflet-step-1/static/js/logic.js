@@ -1,22 +1,93 @@
-// Creating tile layer that will be the background of the map
-var maps = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+// Creating map object
+var myMap = L.map("map", {
+    center: [40.7, -73.95],
+    zoom: 5
+  });
+
+// Streetmap base layer
+var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
   attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
   tileSize: 512,
   maxZoom: 18,
   zoomOffset: -1,
   id: "mapbox/streets-v11",
   accessToken: API_KEY
-});
+}).addTo(myMap);
 
-// Create baseMaps object that will hold lightmap layer
-
+// Store API endpoint
 url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson";
+var geoJson
 
-// Creating createMap function
-d3.json(url, data=> {
-    console.log(data);
-    data.features.forEach(element=> {
-        console.log(element);
-    });
+// Creating function 
+d3.json(url, function(data) {
+    function collectionInfo(features) {
+        return {
+            fillOpacity: 0.75,
+            color: "black",
+            fillColor: getColor(features.geometry.coordinates[2]),
+            radius: getRadius(features.properties.mag),
+            stroke: true,
+            weight: 0.25
+        };
+    }
 
-})
+    // setting color from depth
+    function getColor(depth) {
+        switch (true) {
+            case depth > 90:
+                return "#ff0505";
+            case depth > 70:
+                return "#ff3305";
+            case depth > 50:
+                return "#ff8205";
+            case depth > 30:
+                return "#ffda05";
+            case depth > 10:
+                return "#bcff05";
+            default:
+                return "#82ff05";
+        }
+    }
+
+    // setting radius from magnitude
+    function getRadius(magnitude) {
+        if (magnitude === 0) {
+            return 1;
+        }
+        return magnitude * 4;
+    }
+
+    // creating GEOjson layer
+    L.geoJson(data, {
+        //create circle marker
+        pointToLayer: function(feature, coordinates) {
+            return L.circleMarker(coordinates);
+        },
+
+        style: collectionInfo,
+
+        // popup for each marker
+
+    })
+
+}
+    
+    
+    
+    
+    
+    
+    
+    
+//     data=> {
+//     console.log(data);
+//     var features = [];
+//     data.features.forEach(element=> {
+//         features.push({
+//             "location": element.geometry.coordinates,
+//             "place": element.properties.place,
+//             "magnitude": element.properties.mag
+//         });
+//     });
+// console.log(features);
+// });
