@@ -1,5 +1,5 @@
 // Creating map object
-var myMap = L.map("mapid", {
+var myMap = L.map("map", {
     center: [40.7, -73.95],
     zoom: 5
   });
@@ -15,64 +15,52 @@ var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}
 }).addTo(myMap);
 
 // Store API endpoint
-url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson";
-var geoJson
+var url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson";
 
 // Create the createMap function
 d3.json(url, data=> {
     console.log(data);
-    var features = [];
-    data.features.forEach(element=> {
-        return {
-            fillOpacity: 0.75,
-            color: "black",
-            fillColor: getColor(element.geometry.coordinates[2]),
-            radius: getRadius(element.properties.mag),
-            stroke: true,
-            weight: 0.25
-        };
-    })
 
      // setting color from depth
     function getColor(depth) {
-        switch (true) {
-            case depth > 90:
-                return "#ff0505";
-            case depth > 70:
-                return "#ff3305";
-            case depth > 50:
-                return "#ff8205";
-            case depth > 30:
-                return "#ffda05";
-            case depth > 10:
-                return "#bcff05";
-            default:
-                return "#82ff05";
-        }
+        if (depth < 10) {
+            color = "#bcff05";
+        }else if (depth < 30) {
+            color = "#bcff05";
+        }else if (depth < 50) {
+            color = "#ff8205";
+        }else if (depth < 70) {
+            color = "#ff3305";
+        }else if (depth < 90) {
+            color = "#ff0505";
+        }else{ color = "#82ff05";}
+    
+        return color;
     }
 
 //     // setting radius from magnitude
-    function getRadius(magnitude) {
-        if (magnitude === 0) {
-            return 1;
-        }
-        return magnitude * 4;
-    }
+    // function getRadius(magnitude) {
+    //     if (magnitude === 0) {
+    //         return 1;
+    //     }
+    //     return magnitude * 20000;
+    // }
 
 //     // creating GEOjson layer
     L.geoJson(data, {
         //create circle marker
         pointToLayer: function(features, coordinates) {
-            return L.circleMarker(coordinates);
-        },
-
-        // popup for each marker
-        onEachFeature: function(features, layer) {
-            layer.bindPopup("Place:" + features.properties.place + "<br>Location:<br>" + features.geometry.coordinates + "<br>Magnitude:<br>" + features.properties.mag)
+            return L.circleMarker(coordinates, {
+                color: "#000",
+                weight: 1,
+                fillColor: getColor(features.geometry.coordinates[2]),
+                fillOpacity:0.8,
+                radius: features.properties.mag *5
+            }).bindPopup("Place:" + features.properties.place + "<br>Location:" + features.geometry.coordinates + "<br>Magnitude:" + features.properties.mag);
         }
     }).addTo(myMap);
-})
 
+})
 // LEGEND
 
 
